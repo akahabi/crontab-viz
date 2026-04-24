@@ -58,6 +58,24 @@ def build_layout(
     return layout
 
 
+def _load_entries(path: Optional[str]):
+    """Load crontab entries from a file path or the current user's crontab.
+
+    Args:
+        path: Path to a crontab file, or ``None`` to load the user's crontab.
+
+    Returns:
+        A list of parsed crontab entries.
+
+    Raises:
+        FileNotFoundError: If *path* is provided but does not exist.
+        RuntimeError: If reading the user crontab fails.
+    """
+    if path:
+        return load_file(path)
+    return load_user_crontab()
+
+
 def run_dashboard(
     path: Optional[str] = None,
     n: int = 5,
@@ -65,7 +83,7 @@ def run_dashboard(
     watch: bool = True,
 ) -> None:
     """Start the live terminal dashboard."""
-    entries = load_file(path) if path else load_user_crontab()
+    entries = _load_entries(path)
 
     watcher: Optional[CrontabWatcher] = None
     if watch and path:
@@ -82,7 +100,7 @@ def run_dashboard(
             while True:
                 now_ts = time.monotonic()
                 if watcher and watcher.check():
-                    entries = load_file(path)  # type: ignore[arg-type]
+                    entries = _load_entries(path)
 
                 if now_ts - last_refresh >= refresh_seconds:
                     live.update(build_layout(entries, n=n))
