@@ -47,7 +47,7 @@ def filter_by_tags(
         are kept.  An empty list raises :class:`TagFilterError`.
     exclude:
         Entries that carry **any** of these tags are removed.  Applied
-        after the include filter.
+        after the include filter.  An empty list raises :class:`TagFilterError`.
 
     Returns
     -------
@@ -56,6 +56,8 @@ def filter_by_tags(
     """
     if include is not None and len(include) == 0:
         raise TagFilterError("include tag list must not be empty")
+    if exclude is not None and len(exclude) == 0:
+        raise TagFilterError("exclude tag list must not be empty")
 
     result = entries
 
@@ -81,3 +83,25 @@ def summarise_tags(entries: List[CronEntry]) -> dict:
         for tag in extract_tags(entry):
             counts[tag] = counts.get(tag, 0) + 1
     return counts
+
+
+def entries_for_tag(entries: List[CronEntry], tag: str) -> List[CronEntry]:
+    """Return all entries that contain the given *tag*.
+
+    This is a convenience wrapper around :func:`filter_by_tags` for the
+    common case of looking up a single tag without constructing an include
+    list manually.
+
+    Parameters
+    ----------
+    entries:
+        Full list of parsed cron entries.
+    tag:
+        The tag name to search for (without the ``#tag:`` prefix).
+
+    Returns
+    -------
+    List[CronEntry]
+        Entries whose command contains ``#tag:<tag>``.
+    """
+    return filter_by_tags(entries, include=[tag])
