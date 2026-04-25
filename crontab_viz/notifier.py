@@ -40,6 +40,23 @@ def build_conflict_message(
     return "\n".join(lines)
 
 
+def build_schedule_summary(runs: List[ScheduledRun]) -> str:
+    """Return a human-readable summary of upcoming scheduled runs.
+
+    Args:
+        runs: List of scheduled runs to summarise, typically sorted by run_time.
+
+    Returns:
+        A plain-text string listing each run's time and command.
+    """
+    if not runs:
+        return "No scheduled runs found."
+    lines = [f"Upcoming {len(runs)} scheduled run(s):\n"]
+    for run in runs:
+        lines.append(f"  {run.run_time.isoformat()}  {run.entry.command}")
+    return "\n".join(lines)
+
+
 def send_notification(
     config: NotificationConfig,
     subject: str,
